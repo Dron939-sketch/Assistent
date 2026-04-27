@@ -1,0 +1,33 @@
+# Core
+celery==5.4.0
+redis==5.0.1
+
+# Database
+sqlalchemy==2.0.35
+asyncpg==0.30.0
+alembic==1.13.0
+
+# AI
+openai==1.47.0
+langchain==0.3.0
+langchain-openai==0.2.0
+
+# VK
+vk-api==11.9.0
+aiohttp==3.10.0
+
+# Telegram
+python-telegram-bot==21.3
+
+# Utils
+python-dotenv==1.0.0
+httpx==0.27.0
+tenacity==8.5.0
+
+# Monitoring
+sentry-sdk==2.13.0
+prometheus-client==0.20.0
+
+# Dev
+pytest==8.3.0
+pytest-asyncio==0.23.0
