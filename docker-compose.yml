@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: fishflow-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fishflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fishflow-network
+
+  # Redis cache & message broker
+  redis:
+    image: redis:7-alpine
+    container_name: fishflow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fishflow-network
+
+  # Backend API (FastAPI)
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: fishflow-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./apps/api:/app
+      - ./tenants:/app/tenants
+    networks:
+      - fishflow-network
+
+  # Worker (Celery)
+  worker:
+    build:
+      context: ./apps/worker
+      dockerfile: Dockerfile
+    container_name: fishflow-worker
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - api
+    volumes:
+      - ./apps/worker:/app
+      - ./tenants:/app/tenants
+    networks:
+      - fishflow-network
+
+  # Frontend (Next.js)
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: fishflow-web
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    networks:
+      - fishflow-network
+
+  # Admin panel
+  admin:
+    build:
+      context: ./apps/admin
+      dockerfile: Dockerfile
+    container_name: fishflow-admin
+    env_file:
+      - .env
+    ports:
+      - "3001:3000"
+    depends_on:
+      - api
+      - postgres
+    networks:
+      - fishflow-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  fishflow-network:
+    driver: bridge
