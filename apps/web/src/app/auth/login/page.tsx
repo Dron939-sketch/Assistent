@@ -65,6 +65,7 @@ export default function LoginPage() {
               <input
                 {...register("email", { required: "Email обязателен" })}
                 type="email"
+                autoComplete="email"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
               />
               {errors.email && (
@@ -79,6 +80,7 @@ export default function LoginPage() {
               <input
                 {...register("password", { required: "Пароль обязателен" })}
                 type="password"
+                autoComplete="current-password"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
               />
               {errors.password && (

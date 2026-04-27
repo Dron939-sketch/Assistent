@@ -97,6 +97,7 @@ export default function RegisterPage() {
                 id="full_name"
                 {...register("full_name", { required: "Укажите имя" })}
                 type="text"
+                autoComplete="name"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
               />
               {errors.full_name && (
@@ -115,6 +116,7 @@ export default function RegisterPage() {
                   pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Некорректный email" },
                 })}
                 type="email"
+                autoComplete="email"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
               />
               {errors.email && (
@@ -133,6 +135,7 @@ export default function RegisterPage() {
                   minLength: { value: 8, message: "Минимум 8 символов" },
                 })}
                 type="password"
+                autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
               />
               {errors.password && (
@@ -151,6 +154,7 @@ export default function RegisterPage() {
                   validate: (value) => value === password || "Пароли не совпадают",
                 })}
                 type="password"
+                autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
               />
               {errors.password_confirm && (

@@ -6,9 +6,9 @@ deployment environment (Render env vars). In production we fail loudly if any
 of them are missing or left at the default placeholder.
 """
 
-from typing import List, Optional
+from typing import Any, List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 
 PLACEHOLDER_SECRETS = {
@@ -94,7 +94,9 @@ class Settings(BaseSettings):
     S3_ACCESS_KEY: Optional[str] = None
     S3_SECRET_KEY: Optional[str] = None
 
-    # CORS — list explicit origins (no wildcards). Configure via CORS_ORIGINS env.
+    # CORS — explicit origins or comma-separated env (e.g.
+    # "https://foo.com,https://bar.com"). For Render-style preview hosts
+    # use CORS_ORIGIN_REGEX, e.g. r"https://.*\.onrender\.com".
     CORS_ORIGINS: List[str] = Field(
         default=[
             "http://localhost:3000",
@@ -102,9 +104,31 @@ class Settings(BaseSettings):
             "https://fishflow.ru",
         ]
     )
+    CORS_ORIGIN_REGEX: Optional[str] = Field(default=r"https://.*\.onrender\.com")
 
-    # Security
-    ALLOWED_HOSTS: List[str] = Field(default=["localhost", "*.fishflow.ru", "fishflow.ru"])
+    # Security — TrustedHostMiddleware allowlist. Same env semantics.
+    ALLOWED_HOSTS: List[str] = Field(
+        default=[
+            "localhost",
+            "127.0.0.1",
+            "*.fishflow.ru",
+            "fishflow.ru",
+            "*.onrender.com",
+        ]
+    )
+
+    @field_validator("CORS_ORIGINS", "ALLOWED_HOSTS", mode="before")
+    @classmethod
+    def _split_csv(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("["):
+                # Let pydantic handle JSON-style values.
+                return v
+            return [item.strip() for item in v.split(",") if item.strip()]
+        return v
 
     # Tenant
     DEFAULT_TENANT: str = Field(default="nutrition")
