@@ -1,9 +1,10 @@
 -- ============================================
 -- MIGRATION: 001_init
--- Creates all tables in correct order
+-- Creates all tables in correct order and seeds
+-- baseline tenants. Admin users are created via
+-- the application bootstrap, never hardcoded here.
 -- ============================================
 
--- Run in order:
 \i packages/database/schemas/01_tenants.sql
 \i packages/database/schemas/02_audits.sql
 \i packages/database/schemas/03_content.sql
@@ -13,54 +14,61 @@
 
 -- ============================================
 -- Row Level Security (RLS) for multi-tenancy
+-- Apply tenant_isolation policy on every tenant-scoped table.
 -- ============================================
 
--- Enable RLS on all tables
+DO $$
+DECLARE
+    t TEXT;
+    tables TEXT[] := ARRAY[
+        'users', 'subscriptions',
+        'vk_audits', 'vk_audit_details',
+        'content_generations', 'content_calendar',
+        'marathons', 'marathon_participants',
+        'auto_funnels', 'leads',
+        'daily_analytics', 'leverage_points'
+    ];
+BEGIN
+    FOREACH t IN ARRAY tables LOOP
+        EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
+        EXECUTE format(
+            'DROP POLICY IF EXISTS tenant_isolation ON %I', t
+        );
+        EXECUTE format(
+            'CREATE POLICY tenant_isolation ON %I '
+            'USING (tenant_id = (SELECT id FROM tenants '
+            'WHERE tenant_id = current_setting(''app.current_tenant'', TRUE)::VARCHAR))',
+            t
+        );
+    END LOOP;
+END $$;
+
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE vk_audits ENABLE ROW LEVEL SECURITY;
-ALTER TABLE vk_audit_details ENABLE ROW LEVEL SECURITY;
-ALTER TABLE content_generations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE content_calendar ENABLE ROW LEVEL SECURITY;
-ALTER TABLE marathons ENABLE ROW LEVEL SECURITY;
-ALTER TABLE marathon_participants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE auto_funnels ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE daily_analytics ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leverage_points ENABLE ROW LEVEL SECURITY;
-
--- Policies: users can only see their own tenant's data
-CREATE POLICY tenant_isolation ON users
-    USING (tenant_id = (SELECT id FROM tenants WHERE tenant_id = current_setting('app.current_tenant', TRUE)::VARCHAR));
-
--- ... similar policies for other tables (simplified for now)
+DROP POLICY IF EXISTS tenant_self ON tenants;
+CREATE POLICY tenant_self ON tenants
+    USING (tenant_id = current_setting('app.current_tenant', TRUE)::VARCHAR);
 
 -- ============================================
--- Seed data (default tenants)
+-- Seed data (default tenants only)
 -- ============================================
 
 INSERT INTO tenants (tenant_id, name, specialization, config, branding, ai_config, status)
-VALUES 
-    ('nutrition', 'NutroPult', 'nutrition', 
+VALUES
+    ('nutrition', 'NutroPult', 'nutrition',
      '{"tier_features": {"start": ["auto_funnel"], "pro": ["audit_vk", "post_generator"], "expert": ["marathon_builder"]}}'::jsonb,
      '{"primary_color": "#2E7D32"}'::jsonb,
-     '{"model": "gpt-4"}'::jsonb,
+     '{"model": "gpt-4-turbo-preview"}'::jsonb,
      'active'),
-    
+
     ('psychology', 'PsyFlow', 'psychology',
      '{"tier_features": {"start": ["auto_funnel"], "pro": ["audit_vk", "post_generator"], "expert": ["marathon_builder"]}}'::jsonb,
      '{"primary_color": "#4A90E2"}'::jsonb,
-     '{"model": "gpt-4"}'::jsonb,
+     '{"model": "gpt-4-turbo-preview"}'::jsonb,
      'active'),
-    
+
     ('tarot', 'TarologBot', 'tarot',
      '{"tier_features": {"start": ["auto_funnel"], "pro": ["audit_vk", "post_generator"], "expert": ["marathon_builder"]}}'::jsonb,
      '{"primary_color": "#9C27B0"}'::jsonb,
-     '{"model": "gpt-4"}'::jsonb,
-     'active');
-
--- Create default admin user (password: admin123)
-INSERT INTO users (tenant_id, email, password_hash, full_name, current_tier)
-SELECT id, 'admin@fishflow.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtY1YZZKxQqHG', 'Admin', 'expert'
-FROM tenants WHERE tenant_id = 'nutrition';
+     '{"model": "gpt-4-turbo-preview"}'::jsonb,
+     'active')
+ON CONFLICT (tenant_id) DO NOTHING;

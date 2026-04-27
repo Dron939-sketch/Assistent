@@ -1,6 +1,6 @@
 import { forwardRef, HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, TrendingDown, TrendingUp } from "lucide-react";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {}
 

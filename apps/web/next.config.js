@@ -4,10 +4,10 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['vk.com', 'sun9-*.userapi.com', 'localhost'],
-  },
-  experimental: {
-    serverActions: true,
+    remotePatterns: [
+      { protocol: 'https', hostname: 'vk.com' },
+      { protocol: 'https', hostname: '**.userapi.com' },
+    ],
   },
 };
 

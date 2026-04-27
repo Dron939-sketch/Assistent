@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 import uuid
 import logging
 
@@ -152,7 +152,7 @@ async def get_dashboard_metrics(
     user_uuid = uuid.UUID(user_id)
     
     # Date ranges
-    end_date = datetime.utcnow()
+    end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=days)
     previous_start = start_date - timedelta(days=days)
     
@@ -229,7 +229,7 @@ async def get_dashboard_metrics(
         select(func.count(ContentCalendar.id)).where(
             ContentCalendar.user_id == user_uuid,
             ContentCalendar.status == "scheduled",
-            ContentCalendar.scheduled_for >= datetime.utcnow()
+            ContentCalendar.scheduled_for >= datetime.now(timezone.utc)
         )
     )
     scheduled_posts = scheduled_result.scalar() or 0
@@ -290,7 +290,7 @@ async def get_leads_chart(
     user_id = current_user.get("user_id")
     user_uuid = uuid.UUID(user_id)
     
-    start_date = datetime.utcnow() - timedelta(days=days)
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
     
     # Query leads by day
     result = await db.execute(
@@ -317,7 +317,7 @@ async def get_leads_chart(
     clients_data = []
     
     current = start_date.date()
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     
     row_dict = {row.day: row for row in rows}
     
@@ -348,7 +348,7 @@ async def get_engagement_chart(
     user_id = current_user.get("user_id")
     user_uuid = uuid.UUID(user_id)
     
-    start_date_obj = datetime.utcnow().date() - timedelta(days=days)
+    start_date_obj = datetime.now(timezone.utc).date() - timedelta(days=days)
     
     result = await db.execute(
         select(DailyAnalytics)
@@ -457,7 +457,7 @@ async def complete_leverage_point(
         raise HTTPException(status_code=404, detail="Leverage point not found")
     
     point.completed = 1
-    point.completed_at = datetime.utcnow()
+    point.completed_at = datetime.now(timezone.utc)
     point.actual_impact = request.actual_impact
     point.actual_leads_increase = request.actual_leads_increase
     
@@ -513,7 +513,7 @@ async def generate_leverage_points(user_uuid: uuid.UUID, db: AsyncSession) -> Li
         point = LeveragePoint(
             user_id=user_uuid,
             tenant_id=user.tenant_id if user else None,
-            date=datetime.utcnow().date(),
+            date=datetime.now(timezone.utc).date(),
             action=suggestion["action"],
             effort_hours=suggestion.get("effort_hours", 0),
             expected_impact=suggestion.get("expected_impact", ""),
@@ -606,7 +606,7 @@ async def generate_forecast(user_uuid: uuid.UUID, db: AsyncSession, months: int)
     avg_revenue_per_client = await get_avg_revenue_per_client(user_uuid, db)
     
     forecasts = []
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     
     for i in range(1, months + 1):
         month_date = date(today.year, today.month, 1)

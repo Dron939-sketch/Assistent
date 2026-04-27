@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from src.core.database import get_db
@@ -327,7 +327,7 @@ async def regenerate_content(
     versions.append({
         "text": original.output_text,
         "metadata": original.output_metadata,
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat()
     })
     
     # Regenerate with feedback

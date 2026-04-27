@@ -14,9 +14,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Redis URL from environment
-REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/fishflow")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").lower()
+REDIS_URL = os.environ.get("REDIS_URL")
+
+if not REDIS_URL:
+    if ENVIRONMENT in {"production", "prod", "staging"}:
+        raise RuntimeError(
+            f"REDIS_URL is required in {ENVIRONMENT} but is not set"
+        )
+    REDIS_URL = "redis://localhost:6379"
+    logger.warning("REDIS_URL not set; using local default")
 
 # Create Celery app
 celery_app = Celery(

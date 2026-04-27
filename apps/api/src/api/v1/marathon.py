@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 import logging
 
@@ -214,7 +214,7 @@ async def create_marathon(
     user_id = current_user.get("user_id")
     
     # Calculate end date
-    starts_at = request.starts_at or datetime.utcnow() + timedelta(days=7)
+    starts_at = request.starts_at or datetime.now(timezone.utc) + timedelta(days=7)
     ends_at = starts_at + timedelta(days=request.duration_days)
     
     marathon = Marathon(
@@ -454,7 +454,7 @@ async def publish_marathon(
     
     marathon.status = "active"
     if not marathon.starts_at:
-        marathon.starts_at = datetime.utcnow() + timedelta(days=7)
+        marathon.starts_at = datetime.now(timezone.utc) + timedelta(days=7)
         marathon.ends_at = marathon.starts_at + timedelta(days=marathon.duration_days)
     
     await db.commit()
@@ -647,7 +647,7 @@ async def submit_homework(
         "content": request.content,
         "score": check_result.get("score", 0),
         "feedback": check_result.get("feedback", ""),
-        "submitted_at": datetime.utcnow().isoformat()
+        "submitted_at": datetime.now(timezone.utc).isoformat()
     })
     participant.homework_submissions = submissions
     
@@ -797,7 +797,7 @@ async def send_upsell_message(participant_id: str, marathon: Marathon):
         # Mark as converted if upsell was used
         participant.converted_to_client = True
         participant.converted_value = float(marathon.price) if marathon.price else 0
-        participant.converted_at = datetime.utcnow()
+        participant.converted_at = datetime.now(timezone.utc)
         
         # Update marathon stats
         marathon.conversion_count += 1

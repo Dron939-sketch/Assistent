@@ -4,7 +4,7 @@ Background tasks for auto funnel
 
 from celery import shared_task
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 
 from src.services.vk_service import VKService
@@ -102,13 +102,13 @@ def process_webhook_message(self, message_data: dict, funnel_id: str, lead_id: s
             "role": "assistant",
             "content": response_text,
             "step": current_step_num,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })
         lead.conversation = conversation
         
         # Move to next step
         funnel_session.current_step = current_step_num + 1
-        funnel_session.last_message_at = datetime.utcnow()
+        funnel_session.last_message_at = datetime.now(timezone.utc)
         session.commit()
         
         # Schedule next step if delay exists
@@ -210,7 +210,7 @@ def cleanup_stale_sessions():
     try:
         from src.models.funnel import FunnelSession
         
-        cutoff = datetime.utcnow() - timedelta(days=7)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=7)
         
         stale = session.query(FunnelSession).filter(
             FunnelSession.last_message_at < cutoff,

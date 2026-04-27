@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 import logging
 
@@ -522,7 +522,7 @@ async def vk_webhook(
     conversation.append({
         "role": "user",
         "content": message_text,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     })
     lead.conversation = conversation
     await db.commit()
@@ -603,7 +603,7 @@ async def process_funnel_step(
             "role": "assistant",
             "content": response_text,
             "step": current_step,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })
         lead.conversation = conversation
         await db.commit()

@@ -4,7 +4,7 @@ VK Audit service - analyzes VK page and generates recommendations
 
 import logging
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.services.vk_service import VKService
 from src.services.ai_service import AIService
@@ -80,7 +80,7 @@ class AuditService:
             "categories": categories,
             "global_recommendations": global_recommendations,
             "group_info": group_info,
-            "audited_at": datetime.utcnow().isoformat()
+            "audited_at": datetime.now(timezone.utc).isoformat()
         }
     
     async def _analyze_cover(self, group_info: Dict) -> Dict[str, Any]:
@@ -321,21 +321,20 @@ class AuditService:
         """Analyze content type diversity"""
         issues = []
         recommendations = []
-        score = 0
         max_score = 10
-        
-        if not posts:
-            score = 0
-        else:
+        diversity_count = 0
+        score = 0
+
+        if posts:
             has_text = False
             has_image = False
             has_video = False
             has_quiz = False
-            
+
             for post in posts:
                 text = post.get("text", "")
                 attachments = post.get("attachments", [])
-                
+
                 if len(text) > 200:
                     has_text = True
                 for att in attachments:
@@ -344,14 +343,13 @@ class AuditService:
                         has_image = True
                     elif att_type == "video":
                         has_video = True
-                
-                # Check for polls/questions
+
                 if "? " in text or "опрос" in text.lower() or "выберите" in text.lower():
                     has_quiz = True
-            
+
             diversity_count = sum([has_text, has_image, has_video, has_quiz])
             score = diversity_count * 2
-        
+
         if diversity_count < 3:
             issues.append("Однообразие форматов постов")
             recommendations.append("Чередуйте форматы: полезные посты, видео, опросы, кейсы")
