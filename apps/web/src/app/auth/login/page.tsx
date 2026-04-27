@@ -49,10 +49,11 @@ export default function LoginPage() {
             Вход в FishFlow
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Или{" "}
-            <Link href="/auth/register" className="font-medium text-primary hover:text-primary/80">
-              зарегистрируйтесь
+            Доступ выдаётся вручную. Если вы не получали приглашение —{" "}
+            <Link href="/" className="font-medium text-primary hover:text-primary/80">
+              вернуться на главную
             </Link>
+            .
           </p>
         </div>
         
