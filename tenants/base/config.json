@@ -1,0 +1,80 @@
+{
+  "tenant_id": "base",
+  "name": "FishFlow",
+  "specialization": "expert",
+  "domain": "app.fishflow.ru",
+  "version": "1.0.0",
+  
+  "branding": {
+    "primary_color": "#3B82F6",
+    "secondary_color": "#10B981",
+    "logo_url": "/assets/logo.svg",
+    "favicon_url": "/assets/favicon.ico",
+    "company_name": "FishFlow"
+  },
+  
+  "tier_features": {
+    "start": [
+      "auto_funnel",
+      "auto_reply",
+      "lead_collection",
+      "hook_generator",
+      "notifications"
+    ],
+    "pro": [
+      "start",
+      "audit_vk",
+      "content_plan",
+      "post_generator",
+      "auto_posting",
+      "case_generator",
+      "comment_analysis",
+      "leverage_point"
+    ],
+    "expert": [
+      "pro",
+      "marathon_builder",
+      "auto_homework_check",
+      "brand_story",
+      "uniqueness_analysis",
+      "trust_audit",
+      "landing_builder",
+      "best_practices",
+      "roi_calculator"
+    ]
+  },
+  
+  "ai": {
+    "model": "gpt-4-turbo-preview",
+    "temperature": 0.7,
+    "max_tokens": 2000,
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+  
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+  
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5,
+    "similarity_threshold": 0.7
+  },
+  
+  "pricing": {
+    "currency": "RUB",
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990,
+    "trial_days": 14
+  },
+  
+  "upgrade_messages": {
+    "audit_vk": "Аудит страницы доступен в тарифе Pro. Узнайте, почему вы теряете клиентов",
+    "post_generator": "Генератор постов — в тарифе Pro. Экономьте 10 часов в неделю",
+    "marathon_builder": "Марафоны под ключ — только в тарифе Expert. Проводите марафоны без участия"
+  }
+}
