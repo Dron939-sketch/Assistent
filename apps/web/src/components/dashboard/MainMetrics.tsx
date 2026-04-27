@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, MetricCard } from "@/components/ui/Card";
-import { TrendingUp, TrendingDown, Users, DollarSign, CalendarCheck } from "lucide-react";
+import { MetricCard } from "@/components/ui/Card";
+import { CalendarCheck, DollarSign, TrendingUp, Users } from "lucide-react";
 
 interface MainMetricsProps {
   data: {
@@ -46,7 +46,7 @@ export function MainMetrics({ data }: MainMetricsProps) {
       icon: TrendingUp,
       color: "purple",
     },
-  ];
+  ] as const;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
