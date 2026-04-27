@@ -47,16 +47,16 @@ jobs:
   web:
     name: Web (Next.js)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install --legacy-peer-deps
+      - name: Install (yarn workspaces)
+        run: yarn install --ignore-engines
       - name: Type check
-        run: npx tsc --noEmit
+        working-directory: apps/web
+        run: yarn tsc --noEmit
       - name: Lint
-        run: npm run lint --if-present
+        working-directory: apps/web
+        run: yarn lint

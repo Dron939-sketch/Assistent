@@ -3,6 +3,10 @@ node_modules/
 .pnp/
 .pnp.js
 
+# Use yarn (set via packageManager field). Don't commit npm/pnpm lockfiles.
+package-lock.json
+pnpm-lock.yaml
+
 # Testing
 coverage/
 .nyc_output/
