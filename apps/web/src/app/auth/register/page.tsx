@@ -74,16 +74,14 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Регистрация в FishFlow
+            Регистрация временно закрыта
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Уже есть аккаунт?{" "}
-            <Link
-              href="/auth/login"
-              className="font-medium text-primary hover:text-primary/80"
-            >
-              Войти
+            Мы подключаем доступ вручную для пилотных пользователей.{" "}
+            <Link href="/" className="font-medium text-primary hover:text-primary/80">
+              Вернуться на главную
             </Link>
+            .
           </p>
         </div>
 
