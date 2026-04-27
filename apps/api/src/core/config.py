@@ -6,8 +6,8 @@ deployment environment (Render env vars). In production we fail loudly if any
 of them are missing or left at the default placeholder.
 """
 
-from typing import Any, List, Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Annotated, Any, List, Optional
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from pydantic import Field, field_validator, model_validator
 
 
@@ -97,7 +97,10 @@ class Settings(BaseSettings):
     # CORS — explicit origins or comma-separated env (e.g.
     # "https://foo.com,https://bar.com"). For Render-style preview hosts
     # use CORS_ORIGIN_REGEX, e.g. r"https://.*\.onrender\.com".
-    CORS_ORIGINS: List[str] = Field(
+    # NoDecode tells pydantic_settings to leave the env value as a raw
+    # string so our _split_csv validator can handle both JSON arrays and
+    # comma-separated input.
+    CORS_ORIGINS: Annotated[List[str], NoDecode] = Field(
         default=[
             "http://localhost:3000",
             "https://app.fishflow.ru",
@@ -108,7 +111,7 @@ class Settings(BaseSettings):
     CORS_ORIGIN_REGEX: Optional[str] = Field(default=r"https://.*\.onrender\.com")
 
     # Security — TrustedHostMiddleware allowlist. Same env semantics.
-    ALLOWED_HOSTS: List[str] = Field(
+    ALLOWED_HOSTS: Annotated[List[str], NoDecode] = Field(
         default=[
             "localhost",
             "127.0.0.1",
@@ -163,7 +166,6 @@ class Settings(BaseSettings):
                     "Auth and AI features will not work until they are set.",
                     self.ENVIRONMENT, ", ".join(problems),
                 )
-        return self
         return self
 
 
