@@ -2,23 +2,30 @@
 Authentication endpoints
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from pydantic import BaseModel, EmailStr
+import logging
+from datetime import datetime, timezone
 from typing import Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel, EmailStr
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.config import settings
 from src.core.database import get_db
 from src.core.security import (
-    verify_password, get_password_hash,
-    create_access_token, create_refresh_token,
-    get_current_user
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    get_current_user,
+    get_password_hash,
+    verify_password,
 )
-from src.models.user import User
 from src.core.tenant import get_current_tenant
+from src.models.user import User
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # Pydantic schemas
@@ -34,11 +41,23 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserPublic(BaseModel):
+    id: str
+    email: str
+    full_name: Optional[str] = None
+    current_tier: str
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
     expires_in: int
+    user: UserPublic
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 
 class UserResponse(BaseModel):
@@ -51,31 +70,64 @@ class UserResponse(BaseModel):
     total_clients: int
 
 
-# Endpoints
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _build_token_response(user: User) -> TokenResponse:
+    access_token = create_access_token(
+        data={
+            "sub": user.email,
+            "user_id": str(user.id),
+            "tier": user.current_tier,
+            "tenant": str(user.tenant_id),
+        }
+    )
+    refresh = create_refresh_token(
+        data={"sub": user.email, "user_id": str(user.id)}
+    )
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh,
+        expires_in=settings.JWT_EXPIRES_IN * 24 * 3600,
+        user=UserPublic(
+            id=str(user.id),
+            email=user.email,
+            full_name=user.full_name,
+            current_tier=user.current_tier,
+        ),
+    )
+
+
 @router.post("/register", response_model=TokenResponse)
 async def register(
     user_data: UserRegister,
+    request: Request,
     tenant_id: str = Depends(get_current_tenant),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
-    """Register new user"""
-    
-    # Check if user exists
+    """Register a new user."""
+    logger.info(
+        "auth.register email=%s tenant=%s ip=%s",
+        user_data.email, tenant_id, _client_ip(request),
+    )
+
     result = await db.execute(
         select(User).where(
             User.email == user_data.email,
-            User.tenant_id == tenant_id
+            User.tenant_id == tenant_id,
         )
     )
-    existing = result.scalar_one_or_none()
-    
-    if existing:
+    if result.scalar_one_or_none():
+        logger.warning("auth.register conflict email=%s tenant=%s", user_data.email, tenant_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="Email already registered",
         )
-    
-    # Create new user
+
     new_user = User(
         email=user_data.email,
         password_hash=get_password_hash(user_data.password),
@@ -83,144 +135,109 @@ async def register(
         phone=user_data.phone,
         tenant_id=tenant_id,
         current_tier="start",
-        subscription_status="trial"
+        subscription_status="trial",
     )
-    
+
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
-    
-    # Create tokens
-    access_token = create_access_token(
-        data={"sub": new_user.email, "user_id": str(new_user.id), "tier": new_user.current_tier}
-    )
-    refresh_token = create_refresh_token(
-        data={"sub": new_user.email, "user_id": str(new_user.id)}
-    )
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=7 * 24 * 3600  # 7 days in seconds
-    )
+
+    logger.info("auth.register success user_id=%s email=%s", new_user.id, new_user.email)
+    return _build_token_response(new_user)
 
 
 @router.post("/login", response_model=TokenResponse)
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db)
+    payload: UserLogin,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ):
-    """Login with email/password (OAuth2 form)"""
-    
-    # Find user
-    result = await db.execute(
-        select(User).where(User.email == form_data.username)
-    )
+    """Login with email/password (JSON)."""
+    logger.info("auth.login attempt email=%s ip=%s", payload.email, _client_ip(request))
+
+    result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
-    
-    if not user or not verify_password(form_data.password, user.password_hash):
+
+    if not user or not verify_password(payload.password, user.password_hash):
+        logger.warning(
+            "auth.login failed email=%s reason=%s",
+            payload.email,
+            "no_user" if not user else "bad_password",
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    # Check subscription
+
     if user.subscription_status == "expired":
+        logger.warning("auth.login expired email=%s", payload.email)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Subscription expired. Please renew."
+            detail="Subscription expired. Please renew.",
         )
-    
-    # Create tokens
-    access_token = create_access_token(
-        data={"sub": user.email, "user_id": str(user.id), "tier": user.current_tier, "tenant": user.tenant_id}
-    )
-    refresh_token = create_refresh_token(
-        data={"sub": user.email, "user_id": str(user.id)}
-    )
-    
-    # Update last login
-    from datetime import datetime, timezone
+
     user.last_login_at = datetime.now(timezone.utc)
     await db.commit()
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=7 * 24 * 3600
-    )
+
+    logger.info("auth.login success user_id=%s email=%s", user.id, user.email)
+    return _build_token_response(user)
 
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
-    refresh_token: str,
-    db: AsyncSession = Depends(get_db)
+    payload: RefreshRequest,
+    db: AsyncSession = Depends(get_db),
 ):
-    """Get new access token using refresh token"""
-    from src.core.security import decode_token
-    
-    payload = decode_token(refresh_token, settings.REFRESH_TOKEN_SECRET)
-    
-    if payload.get("type") != "refresh":
+    """Issue a new access/refresh token pair from a valid refresh token."""
+    decoded = decode_token(payload.refresh_token, settings.REFRESH_TOKEN_SECRET)
+
+    if decoded.get("type") != "refresh":
+        logger.warning("auth.refresh wrong_token_type sub=%s", decoded.get("sub"))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token type"
+            detail="Invalid token type",
         )
-    
-    user_id = payload.get("user_id")
+
+    user_id = decoded.get("user_id")
     if not user_id:
+        logger.warning("auth.refresh missing_user_id")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="Invalid token",
         )
-    
-    # Get user
-    result = await db.execute(
-        select(User).where(User.id == user_id)
-    )
+
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
-    
+
     if not user:
+        logger.warning("auth.refresh user_not_found user_id=%s", user_id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
+            detail="User not found",
         )
-    
-    # Create new tokens
-    access_token = create_access_token(
-        data={"sub": user.email, "user_id": str(user.id), "tier": user.current_tier, "tenant": user.tenant_id}
-    )
-    new_refresh_token = create_refresh_token(
-        data={"sub": user.email, "user_id": str(user.id)}
-    )
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=new_refresh_token,
-        expires_in=7 * 24 * 3600
-    )
+
+    logger.info("auth.refresh success user_id=%s", user.id)
+    return _build_token_response(user)
 
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(
     current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
-    """Get current user info"""
-    
+    """Get current user info."""
     user_id = current_user.get("user_id")
-    result = await db.execute(
-        select(User).where(User.id == user_id)
-    )
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
-    
+
     if not user:
+        logger.warning("auth.me user_not_found user_id=%s", user_id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="User not found",
         )
-    
+
     return UserResponse(
         id=str(user.id),
         email=user.email,
@@ -228,5 +245,5 @@ async def get_me(
         current_tier=user.current_tier,
         subscription_status=user.subscription_status,
         total_leads=user.total_leads,
-        total_clients=user.total_clients
+        total_clients=user.total_clients,
     )

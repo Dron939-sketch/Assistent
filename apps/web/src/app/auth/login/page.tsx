@@ -19,7 +19,9 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
-    
+    // eslint-disable-next-line no-console
+    console.info("[login] submit", { email: data.email });
+
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
@@ -27,9 +29,13 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
+      // eslint-disable-next-line no-console
+      console.error("[login] signIn failed", result);
       toast.error("Неверный email или пароль");
       setIsLoading(false);
     } else {
+      // eslint-disable-next-line no-console
+      console.info("[login] signIn success");
       toast.success("Вход выполнен успешно");
       router.push("/");
     }
