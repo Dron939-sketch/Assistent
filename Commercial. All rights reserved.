@@ -1,0 +1,71 @@
+
+---
+
+## Файл 8: `scripts/clone-tenant.sh`
+
+```bash
+#!/bin/bash
+
+# Clone tenant script
+# Usage: ./scripts/clone-tenant.sh <new-tenant-id> [base-tenant-id]
+
+set -e
+
+NEW_TENANT=$1
+BASE_TENANT=${2:-base}
+
+if [ -z "$NEW_TENANT" ]; then
+    echo "❌ Usage: ./scripts/clone-tenant.sh <new-tenant-id> [base-tenant-id]"
+    echo "   Example: ./scripts/clone-tenant.sh tarot"
+    exit 1
+fi
+
+echo "🚀 Creating new tenant: $NEW_TENANT (based on $BASE_TENANT)"
+
+# 1. Copy tenant directory
+if [ -d "tenants/$NEW_TENANT" ]; then
+    echo "⚠️  Tenant $NEW_TENANT already exists. Skipping copy."
+else
+    cp -r "tenants/$BASE_TENANT" "tenants/$NEW_TENANT"
+    echo "✅ Copied tenant configuration"
+fi
+
+# 2. Update config.json
+CONFIG_FILE="tenants/$NEW_TENANT/config.json"
+if [ -f "$CONFIG_FILE" ]; then
+    # Update tenant_id
+    sed -i.bak "s/\"tenant_id\": \".*\"/\"tenant_id\": \"$NEW_TENANT\"/" "$CONFIG_FILE"
+    # Update name
+    sed -i.bak "s/\"name\": \".*\"/\"name\": \"$NEW_TENANT\"/" "$CONFIG_FILE"
+    # Remove backup
+    rm -f "${CONFIG_FILE}.bak"
+    echo "✅ Updated config.json"
+fi
+
+# 3. Create database schema (if using multi-tenant)
+if command -v psql &> /dev/null; then
+    echo "📦 Creating database schema for tenant_$NEW_TENANT..."
+    PGPASSWORD=${DATABASE_PASSWORD:-postgres} psql \
+        -h ${DATABASE_HOST:-localhost} \
+        -U ${DATABASE_USER:-postgres} \
+        -d ${DATABASE_NAME:-fishflow} \
+        -c "CREATE SCHEMA IF NOT EXISTS tenant_$NEW_TENANT;" 2>/dev/null || echo "   (psql not available, schema creation skipped)"
+fi
+
+# 4. Insert into tenants table (via API or direct SQL)
+echo "📝 Registering tenant in database..."
+curl -s -X POST "http://localhost:8000/api/v1/admin/tenants" \
+    -H "Content-Type: application/json" \
+    -d "{\"tenant_id\": \"$NEW_TENANT\", \"base_tenant\": \"$BASE_TENANT\"}" \
+    > /dev/null 2>&1 || echo "   (API not running, tenant not registered automatically)"
+
+echo ""
+echo "✅ Tenant $NEW_TENANT created successfully!"
+echo ""
+echo "Next steps:"
+echo "  1. Edit tenants/$NEW_TENANT/config.json to customize"
+echo "  2. Update prompts in tenants/$NEW_TENANT/prompts/"
+echo "  3. Add terminology in tenants/$NEW_TENANT/terms/glossary.json"
+echo "  4. Configure domain: $NEW_TENANT.fishflow.ru"
+echo ""
+echo "To test: make up && open http://localhost:3000?tenant=$NEW_TENANT"
