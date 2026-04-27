@@ -22,6 +22,7 @@ from src.core.security import (
     verify_password,
 )
 from src.core.tenant import get_current_tenant
+from src.models.tenant import Tenant
 from src.models.user import User
 
 router = APIRouter()
@@ -77,6 +78,22 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+async def _resolve_tenant(db: AsyncSession, slug: str) -> Tenant:
+    """Look up Tenant by its slug (tenants.tenant_id). Raise 400 if missing."""
+    result = await db.execute(select(Tenant).where(Tenant.tenant_id == slug))
+    tenant = result.scalar_one_or_none()
+    if tenant is None:
+        logger.error("auth tenant_not_found slug=%s", slug)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Unknown tenant '{slug}'. Run migrations / seed default tenants "
+                "or pass an existing tenant via X-Tenant-ID header."
+            ),
+        )
+    return tenant
+
+
 def _build_token_response(user: User) -> TokenResponse:
     access_token = create_access_token(
         data={
@@ -106,23 +123,27 @@ def _build_token_response(user: User) -> TokenResponse:
 async def register(
     user_data: UserRegister,
     request: Request,
-    tenant_id: str = Depends(get_current_tenant),
+    tenant_slug: str = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Register a new user."""
     logger.info(
         "auth.register email=%s tenant=%s ip=%s",
-        user_data.email, tenant_id, _client_ip(request),
+        user_data.email, tenant_slug, _client_ip(request),
     )
+
+    tenant = await _resolve_tenant(db, tenant_slug)
 
     result = await db.execute(
         select(User).where(
             User.email == user_data.email,
-            User.tenant_id == tenant_id,
+            User.tenant_id == tenant.id,
         )
     )
     if result.scalar_one_or_none():
-        logger.warning("auth.register conflict email=%s tenant=%s", user_data.email, tenant_id)
+        logger.warning(
+            "auth.register conflict email=%s tenant=%s", user_data.email, tenant_slug,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
@@ -133,7 +154,7 @@ async def register(
         password_hash=get_password_hash(user_data.password),
         full_name=user_data.full_name,
         phone=user_data.phone,
-        tenant_id=tenant_id,
+        tenant_id=tenant.id,
         current_tier="start",
         subscription_status="trial",
     )
@@ -142,7 +163,10 @@ async def register(
     await db.commit()
     await db.refresh(new_user)
 
-    logger.info("auth.register success user_id=%s email=%s", new_user.id, new_user.email)
+    logger.info(
+        "auth.register success user_id=%s email=%s tenant=%s",
+        new_user.id, new_user.email, tenant_slug,
+    )
     return _build_token_response(new_user)
 
 
@@ -150,12 +174,23 @@ async def register(
 async def login(
     payload: UserLogin,
     request: Request,
+    tenant_slug: str = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Login with email/password (JSON)."""
-    logger.info("auth.login attempt email=%s ip=%s", payload.email, _client_ip(request))
+    logger.info(
+        "auth.login attempt email=%s tenant=%s ip=%s",
+        payload.email, tenant_slug, _client_ip(request),
+    )
 
-    result = await db.execute(select(User).where(User.email == payload.email))
+    tenant = await _resolve_tenant(db, tenant_slug)
+
+    result = await db.execute(
+        select(User).where(
+            User.email == payload.email,
+            User.tenant_id == tenant.id,
+        )
+    )
     user = result.scalar_one_or_none()
 
     if not user or not verify_password(payload.password, user.password_hash):
