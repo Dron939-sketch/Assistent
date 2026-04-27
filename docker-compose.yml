@@ -1,22 +1,23 @@
-version: '3.8'
-
 services:
-  # PostgreSQL database
   postgres:
     image: postgres:15-alpine
     container_name: fishflow-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: fishflow
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-fishflow}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - fishflow-network
 
-  # Redis cache & message broker
   redis:
     image: redis:7-alpine
     container_name: fishflow-redis
@@ -24,10 +25,14 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - fishflow-network
 
-  # Backend API (FastAPI)
   api:
     build:
       context: ./apps/api
@@ -38,15 +43,16 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./apps/api:/app
       - ./tenants:/app/tenants
     networks:
       - fishflow-network
 
-  # Worker (Celery)
   worker:
     build:
       context: ./apps/worker
@@ -55,16 +61,17 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
-      - redis
-      - api
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./apps/worker:/app
+      - ./apps/api/src:/app/src/api_src:ro
       - ./tenants:/app/tenants
     networks:
       - fishflow-network
 
-  # Frontend (Next.js)
   web:
     build:
       context: ./apps/web
@@ -79,22 +86,7 @@ services:
     volumes:
       - ./apps/web:/app
       - /app/node_modules
-    networks:
-      - fishflow-network
-
-  # Admin panel
-  admin:
-    build:
-      context: ./apps/admin
-      dockerfile: Dockerfile
-    container_name: fishflow-admin
-    env_file:
-      - .env
-    ports:
-      - "3001:3000"
-    depends_on:
-      - api
-      - postgres
+      - /app/.next
     networks:
       - fishflow-network
 

@@ -4,7 +4,7 @@ Background tasks for marathons
 
 from celery import shared_task
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 
 from src.services.telegram_service import TelegramService
@@ -89,7 +89,7 @@ def send_daily_marathon_message(marathon_id: str, day_number: int):
                 participant.messages_sent += 1
                 
                 # Update last active
-                participant.last_active_at = datetime.utcnow()
+                participant.last_active_at = datetime.now(timezone.utc)
                 
             except Exception as e:
                 logger.error(f"Failed to send to {participant.contact}: {e}")
@@ -156,7 +156,7 @@ def process_daily_marathon_sends():
     try:
         from src.models.marathon import Marathon, MarathonDay
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         # Get active marathons
         marathons = session.query(Marathon).filter(

@@ -2,7 +2,7 @@
 Authentication and security utilities
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -18,6 +18,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer(auto_error=False)
 
 
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify plain password against hash"""
     return pwd_context.verify(plain_password, hashed_password)
@@ -31,45 +35,33 @@ def get_password_hash(password: str) -> str:
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Create JWT access token"""
     to_encode = data.copy()
-    
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(days=settings.JWT_EXPIRES_IN)
-    
+    expire = _utcnow() + (expires_delta or timedelta(days=settings.JWT_EXPIRES_IN))
     to_encode.update({"exp": expire, "type": "access"})
-    
-    encoded_jwt = jwt.encode(
+
+    return jwt.encode(
         to_encode,
         settings.JWT_SECRET,
-        algorithm=settings.JWT_ALGORITHM
+        algorithm=settings.JWT_ALGORITHM,
     )
-    return encoded_jwt
 
 
 def create_refresh_token(data: Dict[str, Any]) -> str:
     """Create JWT refresh token"""
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=30)
+    expire = _utcnow() + timedelta(days=30)
     to_encode.update({"exp": expire, "type": "refresh"})
-    
-    encoded_jwt = jwt.encode(
+
+    return jwt.encode(
         to_encode,
         settings.REFRESH_TOKEN_SECRET,
-        algorithm=settings.JWT_ALGORITHM
+        algorithm=settings.JWT_ALGORITHM,
     )
-    return encoded_jwt
 
 
 def decode_token(token: str, secret: str) -> Dict[str, Any]:
-    """Decode JWT token"""
+    """Decode JWT token. python-jose validates `exp` automatically."""
     try:
-        payload = jwt.decode(
-            token,
-            secret,
-            algorithms=[settings.JWT_ALGORITHM]
-        )
-        return payload
+        return jwt.decode(token, secret, algorithms=[settings.JWT_ALGORITHM])
     except JWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -79,7 +71,7 @@ def decode_token(token: str, secret: str) -> Dict[str, Any]:
 
 
 async def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> Dict[str, Any]:
     """Dependency to get current user from JWT"""
     if not credentials:
@@ -88,35 +80,25 @@ async def get_current_user(
             detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    token = credentials.credentials
-    payload = decode_token(token, settings.JWT_SECRET)
-    
-    # Check token type
+
+    payload = decode_token(credentials.credentials, settings.JWT_SECRET)
+
     if payload.get("type") != "access":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token type",
         )
-    
-    # Check expiration
-    exp = payload.get("exp")
-    if exp and datetime.utcfromtimestamp(exp) < datetime.utcnow():
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired",
-        )
-    
+
     return payload
 
 
 async def get_current_user_optional(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> Optional[Dict[str, Any]]:
     """Optional user (for public endpoints)"""
     if not credentials:
         return None
-    
+
     try:
         return await get_current_user(credentials)
     except HTTPException:

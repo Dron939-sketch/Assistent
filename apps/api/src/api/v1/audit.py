@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from pydantic import BaseModel, HttpUrl
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from src.core.database import get_db
@@ -246,7 +246,7 @@ async def run_vk_audit(audit_id: str, group_id: str, user_id: str):
                     score=final_score,
                     result=result,
                     recommendations=result.get("global_recommendations", {}),
-                    completed_at=datetime.utcnow()
+                    completed_at=datetime.now(timezone.utc)
                 )
             )
             
