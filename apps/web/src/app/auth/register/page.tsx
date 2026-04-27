@@ -30,6 +30,8 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
+    // eslint-disable-next-line no-console
+    console.info("[register] submit", { email: data.email });
     try {
       await api.auth.register({
         email: data.email,
@@ -44,7 +46,11 @@ export default function RegisterPage() {
       });
 
       if (result?.error) {
-        toast.error("Регистрация прошла, но войти не удалось. Попробуйте на странице входа.");
+        // eslint-disable-next-line no-console
+        console.error("[register] signIn after register failed", result);
+        toast.error(
+          "Регистрация прошла, но войти не удалось. Попробуйте на странице входа.",
+        );
         router.push("/auth/login");
         return;
       }
@@ -52,6 +58,8 @@ export default function RegisterPage() {
       toast.success("Аккаунт создан");
       router.push("/");
     } catch (e: unknown) {
+      // eslint-disable-next-line no-console
+      console.error("[register] failed", e);
       const message =
         (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
         "Не удалось создать аккаунт";
