@@ -1,0 +1,55 @@
+{
+  "tenant_id": "nutrition",
+  "name": "NutroPult",
+  "specialization": "nutrition",
+  "domain": "nutropult.fishflow.ru",
+  
+  "branding": {
+    "primary_color": "#2E7D32",
+    "secondary_color": "#81C784",
+    "logo_url": "/tenants/nutrition/assets/logo.svg",
+    "favicon_url": "/tenants/nutrition/assets/favicon.ico",
+    "company_name": "NutroPult"
+  },
+  
+  "voice_style": "Тёплый, заботливый, но экспертный. Без жесткой дисциплины. С юмором, особенно про сладости.",
+  
+  "uniqueness": "Помогаю наладить питание без запретов и голодовок. Едим всё, но с умом.",
+  
+  "ai": {
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+  
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+  
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5
+  },
+  
+  "pricing": {
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990
+  },
+  
+  "marathon_templates": [
+    "5 дней без вздутия",
+    "Неделя здоровых привычек",
+    "Челлендж: сахар под контроль",
+    "Как читать анализы (за 3 дня)"
+  ],
+  
+  "post_themes": [
+    "Разбор популярных мифов о питании",
+    "Кейс клиента (анонимно)",
+    "Один продукт — вся правда",
+    "Разбор анализа (общий)",
+    "Что я ем за день"
+  ]
+}
