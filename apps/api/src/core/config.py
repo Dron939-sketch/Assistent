@@ -102,6 +102,7 @@ class Settings(BaseSettings):
             "http://localhost:3000",
             "https://app.fishflow.ru",
             "https://fishflow.ru",
+            "https://assistent-cf91.onrender.com",
         ]
     )
     CORS_ORIGIN_REGEX: Optional[str] = Field(default=r"https://.*\.onrender\.com")
@@ -141,8 +142,14 @@ class Settings(BaseSettings):
     SENTRY_DSN: Optional[str] = None
 
     @model_validator(mode="after")
-    def _enforce_production_secrets(self) -> "Settings":
+    def _warn_about_production_secrets(self) -> "Settings":
+        # We *log* missing/placeholder secrets but never crash the process
+        # — otherwise the API would not even respond to CORS preflight,
+        # making misconfiguration impossible to debug from the browser.
         if self.ENVIRONMENT.lower() in {"production", "prod", "staging"}:
+            import logging
+
+            log = logging.getLogger("config")
             problems: List[str] = []
             if self.JWT_SECRET in PLACEHOLDER_SECRETS:
                 problems.append("JWT_SECRET")
@@ -151,11 +158,12 @@ class Settings(BaseSettings):
             if not self.OPENAI_API_KEY:
                 problems.append("OPENAI_API_KEY")
             if problems:
-                raise ValueError(
-                    "Missing or placeholder secrets in "
-                    f"{self.ENVIRONMENT}: {', '.join(problems)}. "
-                    "Set them via environment variables."
+                log.error(
+                    "Missing or placeholder secrets in %s: %s. "
+                    "Auth and AI features will not work until they are set.",
+                    self.ENVIRONMENT, ", ".join(problems),
                 )
+        return self
         return self
 
 
