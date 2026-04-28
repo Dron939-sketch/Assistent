@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { Shield } from "lucide-react";
+import { ArrowRight, Shield } from "lucide-react";
 
 import { NICHE_PACKS } from "@/lib/pricing";
 
@@ -102,6 +103,14 @@ export function NichePacks() {
             </>
           )}
         </p>
+
+        <Link
+          href={`/n/${current.slug}`}
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          Подробнее о решении для «{current.name}»
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+        </Link>
       </div>
     </div>
   );
