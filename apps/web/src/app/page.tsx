@@ -1,37 +1,7 @@
 import Link from "next/link";
 
-const FEATURES = [
-  {
-    title: "Аудит ВКонтакте",
-    body:
-      "AI разбирает страницу эксперта по 10 категориям, считает балл доверия и даёт конкретные шаги, что починить в первую очередь.",
-  },
-  {
-    title: "Контент-генератор",
-    body:
-      "Посты, кейсы, ответы на возражения и сценарии для Reels — в стиле автора, с учётом ниши и аудитории.",
-  },
-  {
-    title: "Авто-воронка",
-    body:
-      "Триггеры по ключевым словам в комментариях и личке: ИИ-ответ, сбор лидов, эскалация эксперту, аналитика конверсий.",
-  },
-  {
-    title: "Марафоны под ключ",
-    body:
-      "Структура, ежедневные задания, проверка домашек, мотивационные сообщения и отчёт по результатам участников.",
-  },
-  {
-    title: "Бренд-помощник",
-    body:
-      "Позиционирование, личная история, аудит доверия, поиск зоны уникальности и копирайт лендинга.",
-  },
-  {
-    title: "Аналитика и точки роста",
-    body:
-      "Один дашборд с лидами, ROI и подсказками, какое одно действие сегодня даст максимум результата.",
-  },
-];
+import { EarlyAccessDialog } from "@/components/landing/EarlyAccessDialog";
+import { FeaturesAccordion } from "@/components/landing/FeaturesAccordion";
 
 export default function LandingPage() {
   return (
@@ -53,14 +23,16 @@ export default function LandingPage() {
         </p>
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <a
-            href="https://t.me/fishflow_bot"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-3 text-sm font-medium text-white hover:bg-primary/90"
-          >
-            Получить ранний доступ
-          </a>
+          <EarlyAccessDialog
+            trigger={
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-3 text-sm font-medium text-white hover:bg-primary/90"
+              >
+                Получить ранний доступ
+              </button>
+            }
+          />
           <Link
             href="#features"
             className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
@@ -79,17 +51,7 @@ export default function LandingPage() {
         <h2 className="mb-8 text-center text-2xl font-semibold">
           Что внутри
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
-            >
-              <h3 className="text-base font-semibold">{f.title}</h3>
-              <p className="mt-2 text-sm text-gray-600">{f.body}</p>
-            </div>
-          ))}
-        </div>
+        <FeaturesAccordion />
       </section>
 
       <footer className="border-t border-gray-200 bg-white">
