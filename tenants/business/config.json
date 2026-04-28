@@ -1,0 +1,57 @@
+{
+  "tenant_id": "business",
+  "name": "BizFlow",
+  "specialization": "business",
+  "domain": "biz.fishflow.ru",
+
+  "branding": {
+    "primary_color": "#1E40AF",
+    "secondary_color": "#93C5FD",
+    "logo_url": "/tenants/business/assets/logo.svg",
+    "favicon_url": "/tenants/business/assets/favicon.ico",
+    "company_name": "BizFlow"
+  },
+
+  "voice_style": "Деловой, конкретный, с цифрами и кейсами. Без воды и инфоцыганских клише.",
+
+  "uniqueness": "Помогаю предпринимателям масштабироваться без выгорания и потери качества.",
+
+  "compliance": "legal",
+
+  "ai": {
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5
+  },
+
+  "pricing": {
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990
+  },
+
+  "marathon_templates": [
+    "5 дней для запуска воронки продаж",
+    "Месяц без операционки",
+    "Стратегическая сессия за выходные",
+    "Найм первого сотрудника без боли: 7 дней"
+  ],
+
+  "post_themes": [
+    "Метрика недели: что измерять",
+    "Кейс масштабирования (с цифрами)",
+    "Распространённая ошибка предпринимателя",
+    "Как делегировать без риска",
+    "Что я понял за 10 лет в нише"
+  ]
+}

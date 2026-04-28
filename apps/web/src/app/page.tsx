@@ -1,9 +1,13 @@
 import Link from "next/link";
 
+import { Addons } from "@/components/landing/Addons";
 import { EarlyAccessDialog } from "@/components/landing/EarlyAccessDialog";
+import { FAQ } from "@/components/landing/FAQ";
 import { ModulesByTier } from "@/components/landing/ModulesByTier";
+import { NichePacks } from "@/components/landing/NichePacks";
 import { Roadmap } from "@/components/landing/Roadmap";
 import { Scenarios } from "@/components/landing/Scenarios";
+import { Testimonials } from "@/components/landing/Testimonials";
 import { Tiers } from "@/components/landing/Tiers";
 
 export default function LandingPage() {
@@ -13,6 +17,9 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <span className="text-lg font-semibold">FishFlow</span>
           <nav className="hidden gap-6 text-sm text-gray-600 sm:flex">
+            <a href="#niches" className="hover:text-gray-900">
+              Ниши
+            </a>
             <a href="#tiers" className="hover:text-gray-900">
               Тарифы
             </a>
@@ -22,9 +29,12 @@ export default function LandingPage() {
             <a href="#scenarios" className="hover:text-gray-900">
               Сценарии
             </a>
-            <a href="#roadmap" className="hover:text-gray-900">
-              План
+            <a href="#faq" className="hover:text-gray-900">
+              FAQ
             </a>
+            <Link href="/studio" className="hover:text-gray-900">
+              White-label
+            </Link>
           </nav>
           <EarlyAccessDialog
             trigger={
@@ -40,16 +50,18 @@ export default function LandingPage() {
       </header>
 
       <section className="mx-auto max-w-3xl px-6 pb-20 pt-16 text-center">
-        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-          закрытое бета-тестирование
+        <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          AI-ассистент для 65+ экспертных профессий
         </span>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-          AI-ассистент эксперта
+        <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
+          Ваша экспертиза. Наш ассистент.
+          <span className="block text-primary">Клиенты — каждый день.</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-gray-600">
-          Уровень 1 — бот приводит заявки. Уровень 2 — бот плюс контент и
-          аналитика. Уровень 3 — полная система: клиенты, бренд, марафоны,
-          масштабирование.
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          FishFlow приводит заявки из ВКонтакте и Telegram, пишет посты в
+          вашем голосе, ведёт марафоны и подсказывает, что делать сегодня
+          для роста выручки.
         </p>
         <p className="mt-4 text-base text-gray-700">
           Вы просто помогаете людям. Остальное делает AI.
@@ -67,17 +79,33 @@ export default function LandingPage() {
             }
           />
           <Link
-            href="#tiers"
+            href="#niches"
             className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
           >
-            Посмотреть тарифы
+            Найти свою нишу
           </Link>
         </div>
 
         <p className="mt-6 text-xs text-gray-500">
-          Регистрация и вход для пилотных пользователей пока выключены — мы
-          подключаем доступ вручную.
+          14 дней бесплатно. Без карты. Можно отменить в один клик.
         </p>
+      </section>
+
+      <section
+        id="niches"
+        className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20"
+      >
+        <header className="mb-8 text-center">
+          <h2 className="text-2xl font-semibold">
+            Найдите себя — и увидите готовый набор
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-600">
+            Семь нишевых пресетов покрывают 65+ профессий: словарь, голос,
+            шаблоны постов и марафонов, дисклеймеры. Подключаются к любому
+            тарифу.
+          </p>
+        </header>
+        <NichePacks />
       </section>
 
       <section id="tiers" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20">
@@ -91,6 +119,10 @@ export default function LandingPage() {
           </p>
         </header>
         <Tiers />
+        <p className="mt-6 text-center text-xs text-gray-500">
+          Годовая подписка — скидка 20%. Бесплатные первые 14 дней. Первые
+          30 дней разница при апгрейде — за наш счёт.
+        </p>
       </section>
 
       <section
@@ -134,6 +166,17 @@ export default function LandingPage() {
 (первые 30 дней — разница бесплатно)`}</pre>
       </section>
 
+      <section className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20">
+        <header className="mb-8 text-center">
+          <h2 className="text-2xl font-semibold">Опции и расширения</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Подключаются к любому тарифу — добивают именно то, что нужно
+            вашей нише.
+          </p>
+        </header>
+        <Addons />
+      </section>
+
       <section
         id="scenarios"
         className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20"
@@ -145,6 +188,16 @@ export default function LandingPage() {
           </p>
         </header>
         <Scenarios />
+      </section>
+
+      <section className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20">
+        <header className="mb-8 text-center">
+          <h2 className="text-2xl font-semibold">Что говорят пилотные пользователи</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Первые отзывы из закрытой беты.
+          </p>
+        </header>
+        <Testimonials />
       </section>
 
       <section
@@ -160,6 +213,13 @@ export default function LandingPage() {
         <Roadmap />
       </section>
 
+      <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-6 pb-20">
+        <header className="mb-8 text-center">
+          <h2 className="text-2xl font-semibold">Частые вопросы</h2>
+        </header>
+        <FAQ />
+      </section>
+
       <section className="bg-gray-900 py-16 text-center text-white">
         <div className="mx-auto max-w-2xl px-6">
           <h2 className="text-2xl font-semibold">Готовы попробовать?</h2>
@@ -167,7 +227,7 @@ export default function LandingPage() {
             Места в пилоте ограничены. Оставьте заявку — ответим в течение
             суток.
           </p>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex justify-center gap-3">
             <EarlyAccessDialog
               trigger={
                 <button
@@ -178,6 +238,12 @@ export default function LandingPage() {
                 </button>
               }
             />
+            <Link
+              href="/studio"
+              className="rounded-md border border-white/30 px-5 py-3 text-sm font-medium text-white hover:bg-white/10"
+            >
+              Я хочу запустить свою нишу
+            </Link>
           </div>
         </div>
       </section>
@@ -185,8 +251,10 @@ export default function LandingPage() {
       <footer className="border-t border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-6 py-8 text-xs text-gray-500 sm:flex-row sm:justify-between">
           <span>© FishFlow. Все права защищены.</span>
-          <span>
-            Связь:{" "}
+          <span className="flex gap-4">
+            <Link href="/studio" className="hover:text-gray-900">
+              White-label
+            </Link>
             <a
               href="mailto:hello@fishflow.ru"
               className="text-primary hover:underline"

@@ -1,0 +1,57 @@
+{
+  "tenant_id": "tarot",
+  "name": "TarologBot",
+  "specialization": "tarot",
+  "domain": "tarot.fishflow.ru",
+
+  "branding": {
+    "primary_color": "#9C27B0",
+    "secondary_color": "#D1A6E0",
+    "logo_url": "/tenants/tarot/assets/logo.svg",
+    "favicon_url": "/tenants/tarot/assets/favicon.ico",
+    "company_name": "TarologBot"
+  },
+
+  "voice_style": "Тёплый, образный, мудрый. Без категоричных предсказаний — мягкие ориентиры.",
+
+  "uniqueness": "Карта дня и расклады как инструмент самопознания, а не предсказание судьбы.",
+
+  "disclaimer": "Информационно-развлекательный характер. Все решения вы принимаете сами.",
+
+  "ai": {
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5
+  },
+
+  "pricing": {
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990
+  },
+
+  "marathon_templates": [
+    "Карта дня: 14 дней самопознания",
+    "Расклад на месяц: что в фокусе",
+    "Архетипы Старших Арканов за 22 дня",
+    "Внутренний диалог через карты: 7 дней"
+  ],
+
+  "post_themes": [
+    "Карта дня: значение и аффирмация",
+    "Архетип недели: как с ним работать",
+    "Развенчиваем мифы про карты",
+    "Кейс расклада (без личных данных)",
+    "Что делать, если выпала «неприятная» карта"
+  ]
+}

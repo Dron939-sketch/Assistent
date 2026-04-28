@@ -1,0 +1,55 @@
+{
+  "tenant_id": "fitness",
+  "name": "FitFlow",
+  "specialization": "fitness",
+  "domain": "fitflow.fishflow.ru",
+
+  "branding": {
+    "primary_color": "#EF4444",
+    "secondary_color": "#FCA5A5",
+    "logo_url": "/tenants/fitness/assets/logo.svg",
+    "favicon_url": "/tenants/fitness/assets/favicon.ico",
+    "company_name": "FitFlow"
+  },
+
+  "voice_style": "Энергичный, мотивирующий, без жёсткой дисциплины. Конкретные техники, без воды.",
+
+  "uniqueness": "Тренировки под образ жизни, не наоборот. Без срыва спины и потери радости.",
+
+  "ai": {
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5
+  },
+
+  "pricing": {
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990
+  },
+
+  "marathon_templates": [
+    "Месяц к идеальной спине",
+    "30 дней: 10 000 шагов в день",
+    "Челлендж по отжиманиям за 21 день",
+    "Стартовый план тренировок дома: 14 дней"
+  ],
+
+  "post_themes": [
+    "Техника упражнения дня",
+    "Кейс клиента: до/после",
+    "Главные мифы про похудение",
+    "Что делать, если нет времени",
+    "Восстановление: что важнее тренировки"
+  ]
+}
