@@ -59,6 +59,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = Field(default="postgresql://postgres:postgres@localhost:5432/fishflow")
     DATABASE_POOL_SIZE: int = Field(default=20)
     DATABASE_MAX_OVERFLOW: int = Field(default=40)
+    SKIP_DB_BOOTSTRAP: bool = Field(default=False)
 
     # Redis
     REDIS_URL: str = Field(default="redis://localhost:6379")

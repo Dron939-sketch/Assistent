@@ -133,7 +133,12 @@ async def init_db():
     )
 
     try:
-        await _bootstrap_schema_and_seed(_engine)
+        if settings.SKIP_DB_BOOTSTRAP:
+            logger.info(
+                "SKIP_DB_BOOTSTRAP is set; skipping schema create_all and tenant seed"
+            )
+        else:
+            await _bootstrap_schema_and_seed(_engine)
     except Exception:
         logger.exception("Database bootstrap failed; the API will keep running but writes may fail")
 
