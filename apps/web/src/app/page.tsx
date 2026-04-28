@@ -5,6 +5,7 @@ import { EarlyAccessDialog } from "@/components/landing/EarlyAccessDialog";
 import { FAQ } from "@/components/landing/FAQ";
 import { ModulesByTier } from "@/components/landing/ModulesByTier";
 import { NichePacks } from "@/components/landing/NichePacks";
+import { ProductPreview } from "@/components/landing/ProductPreview";
 import { Roadmap } from "@/components/landing/Roadmap";
 import { Scenarios } from "@/components/landing/Scenarios";
 import { SiteFooter } from "@/components/landing/SiteFooter";
@@ -18,6 +19,9 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <span className="text-lg font-semibold">FishFlow</span>
           <nav className="hidden gap-6 text-sm text-gray-600 sm:flex">
+            <a href="#preview" className="hover:text-gray-900">
+              Превью
+            </a>
             <a href="#niches" className="hover:text-gray-900">
               Ниши
             </a>
@@ -90,6 +94,20 @@ export default function LandingPage() {
         <p className="mt-6 text-xs text-gray-500">
           14 дней бесплатно. Без карты. Можно отменить в один клик.
         </p>
+      </section>
+
+      <section
+        id="preview"
+        className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20"
+      >
+        <header className="mb-8 text-center">
+          <h2 className="text-2xl font-semibold">Как это выглядит в кабинете</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-600">
+            Не просто текст — настоящие экраны: дашборд с метриками, генератор
+            постов, карточка лида и точка приложения усилий на сегодня.
+          </p>
+        </header>
+        <ProductPreview />
       </section>
 
       <section
