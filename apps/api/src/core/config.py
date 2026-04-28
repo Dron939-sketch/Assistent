@@ -6,10 +6,12 @@ deployment environment (Render env vars). In production we fail loudly if any
 of them are missing or left at the default placeholder.
 """
 
-from typing import Annotated, Any, List, Optional
-from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
-from pydantic import Field, field_validator, model_validator
+import json
+import logging
+from typing import List, Optional
 
+from pydantic import Field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PLACEHOLDER_SECRETS = {
     "change_me_in_production",
@@ -20,8 +22,23 @@ PLACEHOLDER_SECRETS = {
 }
 
 
+def _parse_list(value: str) -> List[str]:
+    """Accept either a JSON array or a comma-separated string."""
+    s = (value or "").strip()
+    if not s:
+        return []
+    if s.startswith("["):
+        try:
+            data = json.loads(s)
+            if isinstance(data, list):
+                return [str(x).strip() for x in data if str(x).strip()]
+        except json.JSONDecodeError:
+            pass
+    return [item.strip() for item in s.split(",") if item.strip()]
+
+
 class Settings(BaseSettings):
-    """Application settings"""
+    """Application settings."""
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -47,10 +64,10 @@ class Settings(BaseSettings):
     REDIS_URL: str = Field(default="redis://localhost:6379")
     REDIS_PASSWORD: Optional[str] = None
 
-    # Auth — must be supplied via env in non-development environments
+    # Auth
     JWT_SECRET: str = Field(default="change_me_in_production")
     JWT_ALGORITHM: str = Field(default="HS256")
-    JWT_EXPIRES_IN: int = Field(default=7)  # days
+    JWT_EXPIRES_IN: int = Field(default=7)
     REFRESH_TOKEN_SECRET: str = Field(default="change_me_too")
 
     # VK API
@@ -70,7 +87,7 @@ class Settings(BaseSettings):
     OPENAI_TEMPERATURE: float = Field(default=0.7)
     OPENAI_MAX_TOKENS: int = Field(default=2000)
 
-    # YandexGPT (optional, for Russian-specific)
+    # YandexGPT
     YANDEX_GPT_API_KEY: Optional[str] = None
     YANDEX_GPT_FOLDER_ID: Optional[str] = None
 
@@ -94,45 +111,32 @@ class Settings(BaseSettings):
     S3_ACCESS_KEY: Optional[str] = None
     S3_SECRET_KEY: Optional[str] = None
 
-    # CORS — explicit origins or comma-separated env (e.g.
-    # "https://foo.com,https://bar.com"). For Render-style preview hosts
-    # use CORS_ORIGIN_REGEX, e.g. r"https://.*\.onrender\.com".
-    # NoDecode tells pydantic_settings to leave the env value as a raw
-    # string so our _split_csv validator can handle both JSON arrays and
-    # comma-separated input.
-    CORS_ORIGINS: Annotated[List[str], NoDecode] = Field(
-        default=[
-            "http://localhost:3000",
-            "https://app.fishflow.ru",
-            "https://fishflow.ru",
-            "https://assistent-cf91.onrender.com",
-        ]
+    # CORS / hosts — stored as raw strings so pydantic_settings doesn't try
+    # to JSON-parse them. Properties below expose a List[str] view that
+    # accepts either CSV or JSON-array values.
+    CORS_ORIGINS_STR: str = Field(
+        default=(
+            "http://localhost:3000,"
+            "https://app.fishflow.ru,"
+            "https://fishflow.ru,"
+            "https://assistent-cf91.onrender.com"
+        ),
+        validation_alias="CORS_ORIGINS",
     )
     CORS_ORIGIN_REGEX: Optional[str] = Field(default=r"https://.*\.onrender\.com")
 
-    # Security — TrustedHostMiddleware allowlist. Same env semantics.
-    ALLOWED_HOSTS: Annotated[List[str], NoDecode] = Field(
-        default=[
-            "localhost",
-            "127.0.0.1",
-            "*.fishflow.ru",
-            "fishflow.ru",
-            "*.onrender.com",
-        ]
+    ALLOWED_HOSTS_STR: str = Field(
+        default="localhost,127.0.0.1,*.fishflow.ru,fishflow.ru,*.onrender.com",
+        validation_alias="ALLOWED_HOSTS",
     )
 
-    @field_validator("CORS_ORIGINS", "ALLOWED_HOSTS", mode="before")
-    @classmethod
-    def _split_csv(cls, v: Any) -> Any:
-        if isinstance(v, str):
-            v = v.strip()
-            if not v:
-                return []
-            if v.startswith("["):
-                # Let pydantic handle JSON-style values.
-                return v
-            return [item.strip() for item in v.split(",") if item.strip()]
-        return v
+    @property
+    def CORS_ORIGINS(self) -> List[str]:
+        return _parse_list(self.CORS_ORIGINS_STR)
+
+    @property
+    def ALLOWED_HOSTS(self) -> List[str]:
+        return _parse_list(self.ALLOWED_HOSTS_STR)
 
     # Tenant
     DEFAULT_TENANT: str = Field(default="nutrition")
@@ -146,12 +150,9 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _warn_about_production_secrets(self) -> "Settings":
-        # We *log* missing/placeholder secrets but never crash the process
-        # — otherwise the API would not even respond to CORS preflight,
-        # making misconfiguration impossible to debug from the browser.
+        # Log missing/placeholder secrets but never crash — otherwise the API
+        # would not even respond to CORS preflight, hiding the real cause.
         if self.ENVIRONMENT.lower() in {"production", "prod", "staging"}:
-            import logging
-
             log = logging.getLogger("config")
             problems: List[str] = []
             if self.JWT_SECRET in PLACEHOLDER_SECRETS:
@@ -164,7 +165,8 @@ class Settings(BaseSettings):
                 log.error(
                     "Missing or placeholder secrets in %s: %s. "
                     "Auth and AI features will not work until they are set.",
-                    self.ENVIRONMENT, ", ".join(problems),
+                    self.ENVIRONMENT,
+                    ", ".join(problems),
                 )
         return self
 
