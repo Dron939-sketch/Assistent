@@ -6,6 +6,7 @@ import { Check, Lock, Shield } from "lucide-react";
 import { Addons } from "@/components/landing/Addons";
 import { EarlyAccessDialog } from "@/components/landing/EarlyAccessDialog";
 import { FAQ } from "@/components/landing/FAQ";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Tiers } from "@/components/landing/Tiers";
 import { NICHE_PACKS } from "@/lib/pricing";
 
@@ -242,25 +243,7 @@ export default function NichePage({ params }: PageParams) {
         </div>
       </section>
 
-      <footer className="border-t border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-6 py-8 text-xs text-gray-500 sm:flex-row sm:justify-between">
-          <span>© FishFlow. Все права защищены.</span>
-          <span className="flex gap-4">
-            <Link href="/" className="hover:text-gray-900">
-              Главная
-            </Link>
-            <Link href="/studio" className="hover:text-gray-900">
-              White-label
-            </Link>
-            <a
-              href="mailto:hello@fishflow.ru"
-              className="text-primary hover:underline"
-            >
-              hello@fishflow.ru
-            </a>
-          </span>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

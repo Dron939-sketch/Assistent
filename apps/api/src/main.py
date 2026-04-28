@@ -21,6 +21,7 @@ from src.api.v1 import (
     brand,
     content,
     funnel,
+    leads,
     marathon,
 )
 from src.core.config import settings
@@ -154,6 +155,7 @@ app.include_router(funnel.router, prefix="/api/v1/funnel", tags=["funnel"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])
 app.include_router(brand.router, prefix="/api/v1/brand", tags=["brand"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
+app.include_router(leads.router, prefix="/api/v1/leads", tags=["leads"])
 
 
 if __name__ == "__main__":

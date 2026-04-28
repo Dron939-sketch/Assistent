@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 
 import { EarlyAccessDialog } from "@/components/landing/EarlyAccessDialog";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { STUDIO_PLANS, STUDIO_SETUP_FEE } from "@/lib/pricing";
 
 export const metadata = {
@@ -208,22 +209,7 @@ export default function StudioPage() {
         </div>
       </section>
 
-      <footer className="border-t border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-6 py-8 text-xs text-gray-500 sm:flex-row sm:justify-between">
-          <span>© FishFlow. Все права защищены.</span>
-          <span className="flex gap-4">
-            <Link href="/" className="hover:text-gray-900">
-              Для эксперта
-            </Link>
-            <a
-              href="mailto:hello@fishflow.ru"
-              className="text-primary hover:underline"
-            >
-              hello@fishflow.ru
-            </a>
-          </span>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
