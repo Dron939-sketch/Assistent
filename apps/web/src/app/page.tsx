@@ -106,6 +106,16 @@ export default function LandingPage() {
           </p>
         </header>
         <NichePacks />
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Не нашли свою? Пишите —{" "}
+          <a
+            href="mailto:hello@fishflow.ru"
+            className="text-primary hover:underline"
+          >
+            hello@fishflow.ru
+          </a>{" "}
+          — соберём пресет за 5 рабочих дней.
+        </p>
       </section>
 
       <section id="tiers" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20">
