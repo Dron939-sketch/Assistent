@@ -301,7 +301,7 @@ async def generate_reply(
 async def regenerate_content(
     request: ContentRegenerateRequest,
     current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Regenerate content based on feedback"""
     
