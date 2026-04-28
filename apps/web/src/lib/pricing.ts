@@ -567,3 +567,21 @@ export const STUDIO_PLANS: StudioPlan[] = [
 ];
 
 export const STUDIO_SETUP_FEE = 99000;
+
+/**
+ * Юридические данные продавца. Подставляются в оферту, политику ПДн
+ * и футер. Можно переопределить через env (`NEXT_PUBLIC_SELLER_*`),
+ * чтобы при выходе на прод не править код.
+ */
+export const SELLER = {
+  legalName:
+    process.env.NEXT_PUBLIC_SELLER_LEGAL_NAME ?? "ИП Иванов И.И.",
+  inn: process.env.NEXT_PUBLIC_SELLER_INN ?? "0000000000",
+  ogrnip: process.env.NEXT_PUBLIC_SELLER_OGRNIP ?? "0000000000000",
+  email:
+    process.env.NEXT_PUBLIC_SELLER_EMAIL ?? "hello@fishflow.ru",
+  address:
+    process.env.NEXT_PUBLIC_SELLER_ADDRESS ?? "Российская Федерация",
+  effectiveDate:
+    process.env.NEXT_PUBLIC_SELLER_DOC_DATE ?? "1 января 2026 года",
+};

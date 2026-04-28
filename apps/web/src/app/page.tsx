@@ -7,6 +7,7 @@ import { ModulesByTier } from "@/components/landing/ModulesByTier";
 import { NichePacks } from "@/components/landing/NichePacks";
 import { Roadmap } from "@/components/landing/Roadmap";
 import { Scenarios } from "@/components/landing/Scenarios";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Tiers } from "@/components/landing/Tiers";
 
@@ -258,22 +259,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-6 py-8 text-xs text-gray-500 sm:flex-row sm:justify-between">
-          <span>© FishFlow. Все права защищены.</span>
-          <span className="flex gap-4">
-            <Link href="/studio" className="hover:text-gray-900">
-              White-label
-            </Link>
-            <a
-              href="mailto:hello@fishflow.ru"
-              className="text-primary hover:underline"
-            >
-              hello@fishflow.ru
-            </a>
-          </span>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
