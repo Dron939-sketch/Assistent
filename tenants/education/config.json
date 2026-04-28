@@ -1,0 +1,55 @@
+{
+  "tenant_id": "education",
+  "name": "EduFlow",
+  "specialization": "education",
+  "domain": "edu.fishflow.ru",
+
+  "branding": {
+    "primary_color": "#F59E0B",
+    "secondary_color": "#FCD34D",
+    "logo_url": "/tenants/education/assets/logo.svg",
+    "favicon_url": "/tenants/education/assets/favicon.ico",
+    "company_name": "EduFlow"
+  },
+
+  "voice_style": "Структурный, дружелюбный, поощряющий. Объясняю простым языком, без снисходительности.",
+
+  "uniqueness": "Преподаю так, чтобы ученики понимали, а не зазубривали. С интересом, без скуки.",
+
+  "ai": {
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5
+  },
+
+  "pricing": {
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990
+  },
+
+  "marathon_templates": [
+    "10 дней живого английского",
+    "ЕГЭ-математика: разбор за 14 дней",
+    "Подготовка к собеседованию: 7 дней",
+    "Soft skills для подростка за 5 дней"
+  ],
+
+  "post_themes": [
+    "Лайфхак для подготовки к экзамену",
+    "Разбор типичной ошибки",
+    "Как учиться без выгорания",
+    "Кейс ученика: до/после",
+    "Что родителям делать (а что не делать)"
+  ]
+}

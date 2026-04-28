@@ -1,0 +1,57 @@
+{
+  "tenant_id": "psychology",
+  "name": "PsyFlow",
+  "specialization": "psychology",
+  "domain": "psyflow.fishflow.ru",
+
+  "branding": {
+    "primary_color": "#4A90E2",
+    "secondary_color": "#A0C4FF",
+    "logo_url": "/tenants/psychology/assets/logo.svg",
+    "favicon_url": "/tenants/psychology/assets/favicon.ico",
+    "company_name": "PsyFlow"
+  },
+
+  "voice_style": "Эмпатичный, поддерживающий, без оценок и клейма. Тепло, но без обесценивания.",
+
+  "uniqueness": "Помогаю тревожным, выгоревшим и тем, кто учится говорить «нет», вернуть себе опору.",
+
+  "compliance": "medical",
+
+  "ai": {
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5
+  },
+
+  "pricing": {
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990
+  },
+
+  "marathon_templates": [
+    "7 дней личных границ",
+    "Тревожный родитель: спокойный диалог за 5 дней",
+    "Выгорание: первая помощь за неделю",
+    "Сепарация от родителей за 14 дней"
+  ],
+
+  "post_themes": [
+    "Тревожность простыми словами",
+    "Кейс клиента (анонимно)",
+    "Граница vs. конфликт: как отличить",
+    "Что делать, если не хочется ничего",
+    "5 признаков, что пора к специалисту"
+  ]
+}

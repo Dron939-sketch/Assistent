@@ -1,0 +1,55 @@
+{
+  "tenant_id": "lifestyle",
+  "name": "LifeFlow",
+  "specialization": "lifestyle",
+  "domain": "lifestyle.fishflow.ru",
+
+  "branding": {
+    "primary_color": "#EC4899",
+    "secondary_color": "#FBCFE8",
+    "logo_url": "/tenants/lifestyle/assets/logo.svg",
+    "favicon_url": "/tenants/lifestyle/assets/favicon.ico",
+    "company_name": "LifeFlow"
+  },
+
+  "voice_style": "Лёгкий, визуальный, вдохновляющий. Без штампов и пустого пафоса.",
+
+  "uniqueness": "Помогаю выстраивать визуальный контент, который продаёт сам — без ежедневных съёмок.",
+
+  "ai": {
+    "system_prompt_file": "prompts/system.txt",
+    "reply_prompt_file": "prompts/reply.txt",
+    "post_prompt_file": "prompts/post.txt",
+    "marathon_prompt_file": "prompts/marathon.txt"
+  },
+
+  "forbidden_topics_file": "rules/forbidden_topics.txt",
+  "disclaimer_file": "rules/disclaimer.txt",
+
+  "rag": {
+    "enabled": true,
+    "glossary_file": "terms/glossary.json",
+    "top_k": 5
+  },
+
+  "pricing": {
+    "start": 1490,
+    "pro": 3490,
+    "expert": 7990
+  },
+
+  "marathon_templates": [
+    "Неделя контента, который продаёт себя",
+    "Капсульный гардероб за 7 дней",
+    "Мудборд интерьера за 5 шагов",
+    "Селф-портрет: 10 дней практики"
+  ],
+
+  "post_themes": [
+    "Идея для съёмки этой недели",
+    "Разбор кадра подписчика",
+    "Чем плохо «как у всех»",
+    "Кейс работы с клиентом",
+    "Лайфхак, который экономит часы"
+  ]
+}
